@@ -1,0 +1,7 @@
+library(glmnet)
+x2=matrix(rnorm(100*20),100,20)
+write.table(x2,file="x2.txt",sep="\t",row.names=F,col.names=F)
+g4=sample(1:4,100,replace=TRUE)
+write.table(g4,file="g4.txt",sep="\t",row.names=F,col.names=F)
+fit3=glmnet(x2,g4,family="multinomial")
+predict(fit3,type="response",newx=x2[2:5,])

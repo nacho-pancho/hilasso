@@ -1,0 +1,89 @@
+#include <mex.h>
+#include <math.h>
+#ifndef MATLAB_MEX_FILE
+  #define MATLAB_MEX_FILE
+#endif
+
+/*
+ * Input:
+ * 0 I ............ image to be decomposed
+ * 1 w ............ width of patches
+ * 2 ov ........... overlap (both vert. and horiz)
+ *
+ * output:
+ * 0 X ............ Patches of the image given as column vectors
+ * 1 DC ........... DC of each patch
+ */
+void mexFunction(int nlhs, mxArray *plhs[],int nrhs, const mxArray *prhs[]) {
+  /* input data */
+  double *I;
+  int m,n;
+  int w,ov;
+
+  /* output data */
+  double *X, *DC;
+  int D,N;
+  double dc;
+
+   /* auxiliary */
+  register int i,j,i2,j2,idx;
+
+   if (nrhs < 2) {
+     fprintf(stderr,"Need at least one argument: image.\n");
+       return;
+   }
+
+   /* input data */
+   I = mxGetPr(prhs[0]);
+   m = (int)mxGetM(prhs[0]);
+   n = (int)mxGetN(prhs[0]);
+   if (nrhs > 1)
+     w = (int)mxGetPr(prhs[1]);
+   else
+     w = 8;
+
+   if (nrhs > 2)
+     ov = *mxGetPr(prhs[2]);
+   else
+     ov = w-1;
+   
+   step = w - ov;
+   
+   /*
+    *  fprintf(stderr,"m=%d n=%d L=%d D=%d N=%d w=%d ov=%d step=%d\n",
+    *	   m,n,L,D,N,w,ov,step);
+    */
+   /* output */
+   D = w*w; /* dimension of patches */
+   N = m-w;  /* number of patches */
+   j = (n-w)/step + (((n-w) % step) ? 1: 0) + 1;
+   i = (m-w)/step + (((m-w) % step) ? 1: 0) + 1;
+   N = i*j; 
+   
+   plhs[0]=mxCreateDoubleMatrix(D,N,mxREAL);
+   X=mxGetPr(plhs[0]);
+   
+   plhs[1]=mxCreateDoubleMatrix(1,N,mxREAL);
+   DC=mxGetPr(plhs[1]);
+
+   d = 0; /* since X is col-major, X 'wraps' to the next column automatically 
+	     when d surpasses D */
+   for ( i = 0 ; i <= (m-w) ; i += step ) {
+     for ( j = 0 ; j <= (n-w) ; j += step ) {
+       /* add a patch */
+       dc = 0.0;
+       for ( j2 = 0; j2 < w ; j2++ ) {
+          for ( i2 = 0 ; i2 < w ; i2++ ) {
+	   idx = m*(j+j2)+i+i2;
+	   dc += (X[d++] = I[idx]);
+	 }
+       } 
+       /* compute DC */
+       dc /= D;
+       DC[d/D] = dc;
+       /* remove DC from patch. d is now on the first element of the next patch */
+       for (j2 = 1; j2 <= D; j2++)
+	 X[d-j2] -= dc;
+     }
+   } 
+}

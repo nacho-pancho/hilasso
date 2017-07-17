@@ -1,0 +1,34 @@
+CSS-FSS algorithm
+-use CBLAS 
+-models for fitting term: Gaussian, MOE+G
+-models for reg term    : MOE
+-make csc_fss parameterized in the probability models 
+-implement CD + bisection
+-add P(Z) as a probability model. I need to allow for non-IID models
+ maybe enumerative is not the best idea.
+-add fixed parameter option for all prob models: if they exist,
+ do not estimate and use directly. Useful for later stages in
+ sequential coding.
+-add Markov model for P(z)
+-implement JOE and JOEG for universal fixed-parameters model, which could be
+very useful for speeding up Lr
+
+-implement vanilla dictionary learning for L2-L1 DONE
+
+-implement dictionary learning for LG-L1 (via Huber or generic)
+
+-implement single lookup table with derivatives (gsl_interp_deriv)
+
+-experiments: object recognition, zooming: all depend on markovian model
+
+TIMELINE
+
+1 - Test L2 and Huber dictionary learning
+2 - Implement CSC for LG+L using CD (convex, unbiased)
+3 - Generalize P(Z) in CSC to allow for
+a) non-iid
+b) Markovian models
+4 - Learn Markov models
+5 - Experiments
+
+1 - a few days

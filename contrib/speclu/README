@@ -1,0 +1,163 @@
+Table of Contents
+=================
+
+- Introduction
+- Usage
+- Examples
+- Hardware Requirement
+- Additional Information
+
+Introduction
+============
+
+This directory includes sources used in the following paper:
+
+Wen-Yen Chen, Yangqiu Song, Hongjie Bai, Chih-Jen Lin, and Edward Chang.
+Parallel Spectral Clustering, 2008.
+http://www.cs.ucsb.edu/~wychen/publications/PSC08.pdf
+A short version appears at ECML/PKDD 2008.
+
+This code has been tested under 64-bit Linux environment using
+MATLAB 7.4.0.287 (R2007a).
+
+You will be able to regenerate experiment results in the paper. However,
+results may be slightly different due to the randomness, the CPU speed,
+and the load of your computer.
+
+In the data/ directory, we include the Corel data set and its nearest
+neighbors files. For the RCV1 data set, due to its huge size (~100MB),
+please download it at:
+
+RCV1 data : http://www.cs.ucsb.edu/~wychen/download/rcv_feature.mat (98MB)
+RCV1 label: http://www.cs.ucsb.edu/~wychen/download/rcv_label.mat   (146KB)
+
+To generate nearest neighbors for RCV1, please refer to the Examples section.
+
+Please note that we assume true/predicted labels are integers 1, 2,
+..., num_labels.
+
+Usage
+=====
+
+1. Generate (t-nearest-neighbor) sparse distance matrix:
+
+matlab> gen_nn_distance(data, num_neighbors, block_size, save_type)
+
+        -data:
+            N-by-D data matrix, where N is the number of data, D is the number of dimensions.
+        -num_neighbors:
+            Number of nearest neighbors.
+        -block_size:
+            Block size for partitioning the data matrix. We process the data matrix in a
+            divide-and-conquer manner to alleviate memory use. This is useful for processing
+            very large data set when physical memory is limited.
+        -save_type:
+            0 for .mat file, 1 for .txt file, 2 for both.
+            [Note] The file format of .txt is as follows:
+            data_id #_of_neighbors data_id:distance_value data_id:distance_value ...
+
+2. Run spectral clustering using a sparse similarity matrix:
+
+matlab> [predict_labels evd_time kmeans_time total_time] = sc(A, sigma, num_clusters);
+
+        -A:
+            N-by-N sparse symmetric distance matrix, where N is the number of data.
+        -sigma:
+            Sigma value used in computing similarity (S), where S_ij = exp(-dist_ij^2 / 2*sigma*sigma);
+            if sigma is 0, apply self-tunning technique, where S_ij = exp(-dist_ij^2 /2*avg_dist_i*avg_dist_j).
+        -num_clusters:
+            Number of clusters.
+
+3. Run sepctral clustering using Nystrom method:
+
+matlab> [predict_labels evd_time kmeans_time total_time] = nystrom(data, num_samples, sigma, num_clusters);
+
+        -data:
+            N-by-D data matrix, where N is the number of data, D is the number of dimensions.
+        -num_samples:
+            Number of random samples.
+        -sigma:
+            Sigma value used in computing similarity (S), where S = exp(-dist^2 / 2*sigma*sigma).
+        -num_clusters:
+            Number of clusters.
+
+4. Run kmeans clustering after eigendecompostion:
+
+matlab> cluster_labels = k_means(data, centers, num_clusters);
+
+        -data:
+            N-by-D data matrix, where N is the number of data, D is the number of dimensions.
+        -centers:
+            K-by-D centers matrix, where K is num_clusters, or
+            'random', random initialization, or
+            [], empty matrix, orthogonal initialization
+        -num_clusters:
+            Number of clusters.
+
+5. Evaludate clustering quality using NMI (Normalized Mutual Information):
+
+matlab> score = nmi(true_labels, predict_labels)
+
+        -true_labels:
+            N-by-1 vector containing true labels.
+        -predict_labels:
+            N-by-1 vector containing predicted labels.
+
+6. Run experiment scripts (sparse/nystrom) with different parameters as shown in papers:
+
+matlab> script_sc(dataset)
+
+        -dataset:
+            data set number, 1 = Corel, 2 = RCV1.
+
+matlab> script_nystrom(dataset)
+
+        -dataset:
+            data set number, 1 = Corel, 2 = RCV1.
+
+Examples
+========
+
+Ggenerate (t-nearest-neighbor) sparse distance matrix:
+
+matlab> load data/corel_feature.mat;
+matlab> gen_nn_distance(feature, 50, 10, 2);
+
+Run spectral clustering using a sparse similarity matrix:
+
+matlab> load data/corel_50_NN_sym_distance.mat;
+matlab> [predict_labels evd_time kmeans_time total_time] = sc(A, 20, 18);
+matlab> load data/corel_label.mat;
+matlab> nmi_score = nmi(label, predict_labels);
+
+Run spectral clustering using Nystrom method:
+
+matlab> load data/corel_feature.mat;
+matlab> [predict_labels evd_time kmeans_time total_time] = nystrom(feature, 200, 20, 18);
+matlab> load data/corel_label.mat;
+matlab> nmi_score = nmi(label, predict_labels);
+
+Run experiment scripts (sparse/nystrom) for Corel data:
+
+matlab> script_sc(1);
+matlab> script_nystrom(1);
+
+Hardware Requirement
+====================
+
+Please be noted when running Nystrom with RCV1 data (193,844 instances), it may
+consume more than 3GB memory with 2000 random samples (193,844 * 2,000 * 8Bytes).
+
+If you want to run with more number of samples, please make sure you have
+enough memory on your machine.
+
+Additiona Information
+=====================
+
+If you find this tool useful, please cite it as
+
+Wen-Yen Chen, Yangqiu Song, Hongjie Bai, Chih-Jen Lin, and Edward Chang.
+Parallel Spectral Clustering, 2008.
+
+For any question, please contact Wen-Yen Chen <wychen@cs.ucsb.edu>
+and Chih-Jen Lin <cjlin@csie.ntu.edu.tw>.

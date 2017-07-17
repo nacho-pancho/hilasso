@@ -1,0 +1,5 @@
+sparse ...... Sparsity related functions
+mdl ......... Minimum Description Length functions
+infotheo .... Various Information-Theory related functions
+priors ...... Implementation of various probability density functions
+util ........ Decomposition, composition and data display functions

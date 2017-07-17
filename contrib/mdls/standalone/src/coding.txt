@@ -1,0 +1,10 @@
+I have the following options:
+RESIDUAL             | SUPPORT   | MAGNITUDE                 | CODING                                                                 | ALGORITHM
+two-part Gaussian    | IID Ber   | two-part IID Laplacian    | traditional Lasso compensated by codelength and quantization           | LARS
+two-part Gaussian    | IID Ber   | two-part INID Laplacian   | traditional weighted Lasso compensated by codelength and quantization  | weighted LARS
+two-part Gaussian    | IID Ber   | IID mixture of Laplacians | weighted Lasso compensated by codelength and quantization              | iterated weighted LARS
+two-part Gaussian    | INID Ber  | two-part IID Laplacian    | traditional Lasso compensated by codelength and quantization           | LARS
+two-part Gaussian    | INID Ber  | two-part INID Laplacian   | traditional weighted Lasso compensated by codelength and quantization  | weighted LARS
+two-part Gaussian    | INID Ber  | IID mixture of Laplacians | weighted Lasso compensated by codelength and quantization              | iterated weighted LARS
+mixture of Gaussians | IID Ber   | IID mixture of Laplacians | stagewise                                                              | iterated weighted LARS
+

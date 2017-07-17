@@ -1,0 +1,532 @@
+
+csc_fss.h,1563
+#define MDLS_CSC_FSSMDLS_CSC_FSS2,21
+class csc_constants {csc_constants45,1276
+  double qx; // signal quantization stepqx47,1306
+  double qa; // coefficients quantization step  qa48,1347
+  double maxx;   // x takes values in [0,maxx]maxx49,1396
+  double sigma; // variance of Gaussian noise in modelsigma50,1443
+  bool dump_path;dump_path51,1498
+  int step_mode; // 0: non-greedy, stepwise, 1: greedy matching pursuitstep_mode52,1516
+  int nzmax; // forced maximum number of nonzero elements in reconstructionnzmax53,1588
+  int Loffset; // additional fixed codelength to be added to the final resultLoffset54,1664
+  parametric_lut* Lr_lut; // optional lookup table for codelength of residual rLr_lut55,1742
+  parametric_lut* La_lut; // optional lookup table for codelength of coeffs.  aLa_lut56,1822
+  sc_matrix<T> D; // copy of dictionary, used for parallel impl.D57,1902
+  sc_matrix<T> DtD; // Gram matrix of D, scaled by quantization step qaDtD58,1967
+  int M,K;M59,2039
+  int M,K;K59,2039
+  int j; // current sample index, used when dumping pathj60,2050
+  csc_constants(const sc_matrix<T>& _D, const csc_coding_params& params) csc_constants62,2108
+  ~csc_constants() {~csc_constants80,2555
+void csc_fss_lg_l(const sc_matrix<T>& X,csc_fss_lg_l93,2787
+void csc_fss_lg_l_core(const csc_constants<T>* constants,csc_fss_lg_l_core223,6150
+void csc_mp_lg_l_core(const csc_constants<T>* constants,csc_mp_lg_l_core498,15649
+void csc_vanilla_mp_lg_l_core(const csc_constants<T>* constants,csc_vanilla_mp_lg_l_core754,24702
+
+csc.h,31
+#define MDLS_CSCMDLS_CSC2,17
+
+csc_types.h,2056
+#define MDLS_CSC_TYPESMDLS_CSC_TYPES2,23
+class csc_state { // current state for CSC-FSS algorithmcsc_state8,111
+  sc_vector<T> a;    // current coefficientsa11,178
+  sc_vector<T> r;    // current residualr12,223
+  sc_vector<T> Dtr;  // current correlationDtr13,264
+  sc_vector<bool> S;    // current support  S14,308
+  sc_vector<T> r_cand;   // candidate r_cand15,353
+  sc_vector<T> Dtr_cand;   // candidate Dtr_cand16,392
+  double RSS; // current sum of squares of residualRSS17,433
+  double ASA;  // current sum of absolute of coefficientsASA18,485
+  double L ; // current codelengthL19,543
+  double SS; // current support sizeSS20,578
+  csc_state(int M, int K) {csc_state22,616
+  ~csc_state() { ~csc_state31,781
+struct csc_cd_state { // current state for CSC-CD algorithmcsc_cd_state41,905
+typedef enum {CSC_STEP_STEPWISE = 0, CSC_STEP_MP = 1, CSC_VANILLA_MP = 2} step_modes;CSC_STEP_STEPWISE51,1207
+typedef enum {CSC_STEP_STEPWISE = 0, CSC_STEP_MP = 1, CSC_VANILLA_MP = 2} step_modes;CSC_STEP_MP51,1207
+typedef enum {CSC_STEP_STEPWISE = 0, CSC_STEP_MP = 1, CSC_VANILLA_MP = 2} step_modes;CSC_VANILLA_MP51,1207
+typedef enum {CSC_STEP_STEPWISE = 0, CSC_STEP_MP = 1, CSC_VANILLA_MP = 2} step_modes;step_modes51,1207
+struct csc_coding_params {csc_coding_params71,2196
+  double qx; // signal quantization stepqx73,2224
+  double qa; // coefficients quantization step  qa74,2265
+  double maxx;   // x takes values in [0,maxx]maxx75,2314
+  double sigma; // variance of Gaussian noise in modelsigma76,2361
+  bool dump_path; // if true, large files will be generated with the solution path and intermediate results obtained during coding of each sample. Use with care.dump_path77,2416
+  int step_mode; // 0: non-greedy, stepwise, 1: greedy matching pursuitstep_mode78,2578
+  int nzmax; // forced maximum number of nonzero elements in reconstructionnzmax79,2650
+  double Loffset; // additional fixed codelength to be added to the final resultLoffset80,2726
+  csc_coding_params() {csc_coding_params82,2808
+
+huber.h,574
+#define MDLS_HUBERMDLS_HUBER2,19
+struct sc_huber_workspace {sc_huber_workspace5,60
+  sc_huber_workspace(): Hk(),Rj(),Gk(),Yk(),YtHk() {}sc_huber_workspace7,89
+  sc_huber_workspace(int M) {sc_huber_workspace9,146
+  ~sc_huber_workspace() {~sc_huber_workspace22,384
+  sc_matrix<T> Hk; // inverse of Hessian matrix for atom kHk42,803
+  sc_vector<T> Rj;    // residual for sample jRj43,862
+  sc_vector<T> Gk;    // gradient for atom kGk44,909
+  sc_vector<T> Yk;   // Gk(t)-Gk(t-1) at iteration t > 1Yk48,994
+  sc_vector<T> YtHk; // Yk^T * inv(H_k)YtHk49,1051
+
+lookup.h,3038
+#define my_assert(my_assert9,142
+#define my_assert(my_assert11,181
+struct sc_function {sc_function17,251
+  double (*fun)(double x, double* params);fun18,272
+  double* params;params19,315
+class lut {lut29,734
+ lut(void): values(NULL),derivatives(NULL),tsize(0) { }lut32,756
+  lut(double _xamax, double dx, sc_function& pdf) {lut37,882
+  lut(double xamax, double dx, double* _values) { lut55,1387
+  ~lut() { ~lut69,1752
+  inline double operator[](int i) const {operator []76,1857
+  inline double& operator[](int i)  {operator []80,1928
+  inline double val(int i) const {val84,1995
+  inline double val(double x) const {val88,2066
+  inline double der(int i) const {der92,2153
+  inline double der(double x) {der96,2229
+  void _compute_derivative() {_compute_derivative101,2330
+  double* values; /// values of the functionvalues123,2973
+  double* derivatives; /// derivatives of the functionderivatives124,3018
+  int tsize; /// table sizetsize125,3073
+  int offset; /// offset of x=0offset126,3101
+  double idx,xmax,xmin; /// inverse of dx, max and min values representedidx127,3133
+  double idx,xmax,xmin; /// inverse of dx, max and min values representedxmax127,3133
+  double idx,xmax,xmin; /// inverse of dx, max and min values representedxmin127,3133
+class parametric_lut {parametric_lut138,3520
+  parametric_lut(double _maxx, double _qx, double _maxt, double _qt) {parametric_lut147,3858
+  parametric_lut(const sc_matrix<double>& ext_lut) {parametric_lut172,4811
+  ~parametric_lut() {~parametric_lut208,5917
+  inline double lookup(double x,double theta) {lookup215,6033
+  void dump(std::ofstream& fout) {dump220,6198
+  inline void batch_lookup(double* x, int n, double theta) {batch_lookup241,6710
+  inline double accu_lookup(const double* x, int n, double theta) {accu_lookup250,6982
+  inline double get_qt() { return 1.0/iqt; }get_qt264,7315
+  inline double get_qx() { return 1.0/iqx;  }get_qx265,7360
+  inline double** get_data() const { return data; } // warning: raw accessget_data266,7406
+  inline int get_ntables() const { return ntables;  }get_ntables267,7481
+  inline int get_tsize() const { return tsize;  }get_tsize268,7535
+  inline int get_offset() const { return offset;  }get_offset269,7585
+  inline double get_maxx() const  { return maxx; }get_maxx270,7637
+  inline double get_minx() const { return minx; }get_minx271,7688
+  inline double get_maxt() const { return maxt; }get_maxt272,7738
+  double **data;data276,7800
+  double iqt; // table i indexes table for parameter value theta=qt*iiqt277,7817
+  double iqx; // table index j indexes value x=qx*j-offsetiqx278,7887
+  double maxt;//maximum parameter value (minimum assumed 0)maxt279,7946
+  double minx, maxx;minx280,8006
+  double minx, maxx;maxx280,8006
+  int offset; // offset of x=0 in tableoffset281,8027
+  int ntables;ntables282,8067
+  int tsize;tsize283,8082
+  inline int get_table_index(double theta) {get_table_index285,8096
+#undef my_assertmy_assert339,10031
+
+mdls_deconstruct.h,83
+void mdls_deconstruct(const sc_matrix<T>& I, int w, int ov, mdls_deconstruct4,50
+
+mdls_dict_learn.h,2543
+#define MDLS_DICT_LEARNMDLS_DICT_LEARN2,24
+enum { DEBUG_NONE=0, DEBUG_MINIMAL=1, DEBUG_MILD=2, DEBUG_MEDIUM=3,DEBUG_NONE6,93
+enum { DEBUG_NONE=0, DEBUG_MINIMAL=1, DEBUG_MILD=2, DEBUG_MEDIUM=3,DEBUG_MINIMAL6,93
+enum { DEBUG_NONE=0, DEBUG_MINIMAL=1, DEBUG_MILD=2, DEBUG_MEDIUM=3,DEBUG_MILD6,93
+enum { DEBUG_NONE=0, DEBUG_MINIMAL=1, DEBUG_MILD=2, DEBUG_MEDIUM=3,DEBUG_MEDIUM6,93
+       DEBUG_HEAVY=4, DEBUG_INSANE=5 };DEBUG_HEAVY7,161
+       DEBUG_HEAVY=4, DEBUG_INSANE=5 };DEBUG_INSANE7,161
+struct csc_learning_data {csc_learning_data14,336
+  const sc_matrix<T>& train;train15,363
+  const sc_matrix<T>& test;test16,392
+  csc_learning_data(const sc_matrix<T>& _train, csc_learning_data18,421
+struct csc_learning_state {csc_learning_state28,686
+  sc_matrix<T> D; // current dictionaryD29,714
+  double N; // efective number of samples processedN30,754
+  int r; // current iteration (for resuming)r31,806
+  sc_matrix<T> AAt;AAt34,868
+  sc_matrix<T> XAt;XAt35,888
+  sc_vector<T> rho; // occurence of each atomrho36,908
+  sc_matrix<T> xrho; // co-occurence matrix of atomsxrho37,954
+  sc_matrix<T> maxMu; // unused for nowmaxMu41,1038
+  sc_matrix<T> meanMu; // unused for nowmeanMu42,1078
+  sc_vector<T> L; // codelength at each validation iteration (xval)L43,1119
+  csc_learning_state():csc_learning_state45,1188
+  csc_learning_state(int M, int K, int J) {    csc_learning_state48,1282
+  ~csc_learning_state() {~csc_learning_state62,1740
+struct csc_learning_params {csc_learning_params82,2285
+  int max_iter;max_iter83,2314
+  int min_change;min_change84,2330
+  int batch_size;batch_size85,2348
+  int test_size;test_size86,2366
+  double inertia;inertia87,2383
+  double discard_unused_atoms; // not used yetdiscard_unused_atoms88,2401
+  double discard_const_patches; // not used yetdiscard_const_patches89,2448
+  int xval_step; // every how many batches do we validatexval_step90,2496
+  double mu0; // incoherence term, not used yetmu091,2554
+  char* cache_dir; // where to backup the state of the algorithmcache_dir92,2602
+  int debug; // debug leveldebug93,2667
+  csc_learning_params():csc_learning_params95,2696
+void mdls_random_subsample(const sc_matrix<T>& sample,mdls_random_subsample275,8520
+void mdls_dict_learn_csc_l2(const csc_learning_data<T>& data, // learn inputmdls_dict_learn_csc_l2293,9174
+void mdls_dict_update_l2(const sc_matrix<T>& AAt, mdls_dict_update_l2419,12379
+void mdls_dict_update_huber(const sc_matrix<T>& X, mdls_dict_update_huber462,13688
+
+mdls_get_patches.h,154
+#define MACRO_clip_coords(MACRO_clip_coords3,19
+void mdls_get_patches(const T* I, int m, int n, const int* grid, int N, // inputmdls_get_patches5,105
+
+mdls_io.h,1598
+#define MDLS_IOMDLS_IO2,16
+#define MAXLEN MAXLEN8,120
+enum M_FIELD {M_FIELD30,748
+  M_LITTLE_ENDIAN = 0M_LITTLE_ENDIAN31,763
+enum P_FIELD {P_FIELD34,789
+  P_DOUBLE = 0,P_DOUBLE35,804
+  P_FLOAT,P_FLOAT36,820
+  P_INT,P_INT37,831
+  P_SHORT,P_SHORT38,840
+  P_UNSIGNED,P_UNSIGNED39,851
+  P_BYTEP_BYTE40,865
+enum T_FIELD {T_FIELD43,878
+  T_DENSE = 0,T_DENSE44,893
+  T_TEXT = 1,T_TEXT45,908
+  T_SPARSE = 2T_SPARSE46,922
+struct TypeField {TypeField49,941
+  char M,O,P,T;M50,960
+  char M,O,P,T;O50,960
+  char M,O,P,T;P50,960
+  char M,O,P,T;T50,960
+  unsigned int elSize;elSize51,976
+  static const unsigned int elemSizes[6];elemSizes53,1000
+  TypeField() {}TypeField54,1042
+  TypeField(unsigned int aM,unsigned int aO,TypeField55,1059
+  TypeField(long val) {TypeField59,1184
+  unsigned int value() { return M*1000 + O*100 + P*10 +T; }value80,1582
+  unsigned int elemSize() { return elSize; }elemSize81,1642
+struct Header {Header84,1691
+  long type;type85,1707
+  long mrows;mrows86,1720
+  long ncols;ncols87,1734
+  long imagf; // imaginary flagimagf88,1748
+  long namelen;namelen89,1780
+  Header() {}Header90,1796
+  Header(size_t _rows,size_t _cols, long aNamelen) {Header91,1810
+void mdls_write_matlab_matrix(const sc_matrix<T>& mat,mdls_write_matlab_matrix104,2063
+void mdls_write_matlab_matrix(const sc_vector<T>& v,mdls_write_matlab_matrix180,4048
+void mdls_read_ascii_matrix(const char* filename, sc_matrix<T>& mat)mdls_read_ascii_matrix193,4309
+void mdls_read_matlab_matrix(const char* name, mdls_read_matlab_matrix260,5570
+
+mdls_linalg_fun_blas.h,5398
+#define CSC_LINALG_FUNCSC_LINALG_FUN2,23
+#define my_assert(my_assert8,107
+#define my_assert(my_assert10,146
+inline void sc_fill(const T& a, sc_vector<T>& u) { sc_fill143,7990
+inline T sc_sum(const sc_vector<T>& u) { sc_sum151,8149
+template<> inline int sc_amax<double>(const sc_vector<double>& u) {sc_amax160,8302
+inline void sc_copy(const sc_vector<T>& u, sc_vector<T>& v) { sc_copy166,8439
+inline void sc_scale(const T& a, sc_vector<T>& u) { sc_scale176,8660
+inline void sc_scale(const T& a, const sc_vector<T>& u, sc_vector<T>& v) { sc_scale185,8846
+inline void sc_fill(const T& a, const sc_sparse_vector<T>& u) { sc_fill197,9082
+inline void sc_copy(const sc_sparse_vector<T>& u, sc_sparse_vector<T>& v) { sc_copy206,9273
+inline void sc_scale(const T& a, sc_sparse_vector<T>& u) { sc_scale218,9575
+inline void sc_scale(const T& a, const sc_sparse_vector<T>& u, sc_sparse_vector<T>& v) { sc_scale226,9754
+inline void sc_fill(const T& a, const sc_matrix<T>& A) { sc_fill242,10088
+inline void sc_copy(const sc_matrix<T>& A, sc_matrix<T>& B) { sc_copy251,10267
+inline void sc_scale(const T& a, sc_matrix<T>& A) { sc_scale262,10519
+inline void sc_scale(const T& a, const sc_matrix<T>& A, sc_matrix<T>& B) { sc_scale271,10710
+inline void sc_fill(const T& a, const sc_sparse_matrix<T>& A) { sc_fill284,10977
+inline void sc_copy(const sc_sparse_matrix<T>& A, sc_sparse_matrix<T>& B) { sc_copy293,11168
+inline void sc_scale(const T& a, sc_sparse_matrix<T>& A) { sc_scale311,11608
+inline T sc_scale(const T& a, const sc_sparse_matrix<T>& A, sc_sparse_matrix<T>& B) { sc_scale320,11812
+void sc_full_to_sparse(const sc_vector<T>& vf, sc_sparse_vector<T>& vs) sc_full_to_sparse341,12359
+void sc_sparse_to_full(const sc_sparse_vector<T>& vs, sc_vector<T>& vf) sc_sparse_to_full359,12789
+void sc_add(const T& a, const sc_vector<T>& v)sc_add377,13101
+void sc_scaled_add(const T& a, const sc_vector<T>& v, sc_vector<T>& w)sc_scaled_add386,13242
+void sc_add(const sc_vector<T>& u, const sc_vector<T>& v, sc_vector<T>& w)sc_add396,13441
+void sc_scaled_add(const T& a, const sc_vector<T>& u, const T& b, const sc_vector<T>& v, sc_vector<T>& w)sc_scaled_add407,13672
+void sc_add(const sc_sparse_vector<T>& u, const sc_sparse_vector<T>& v, sc_sparse_vector<T>& w)sc_add418,13938
+template<typename T>  T sc_norm(const sc_vector<T>& u)sc_norm439,14400
+template<typename T>  T sc_norm(const sc_sparse_vector<T>& u)sc_norm450,14575
+template<typename T> T sc_dist(const sc_sparse_vector<T>& u, const sc_sparse_vector<T>& v)sc_dist462,14803
+template<typename T> T sc_dist(const sc_vector<T>& u, const sc_vector<T>& v)sc_dist479,15257
+template<typename T> void sc_scaled_add(const T& a, const sc_sparse_vector<T>& u, const T& b, const sc_sparse_vector<T>& v, sc_sparse_vector<T>& w)sc_scaled_add488,15474
+inline T sc_dot(const sc_vector<T>& u, const sc_vector<T>& v) { sc_dot515,16414
+template<typename T> inline T sc_dot(const sc_vector<T>& u, const sc_sparse_vector<T>& v)sc_dot525,16631
+template<typename T> inline T sc_dot(const sc_sparse_vector<T>& u, const sc_vector<T>& v)sc_dot539,16938
+template<typename T> inline T sc_dot(const sc_sparse_vector<T>& u, const sc_sparse_vector<T>& v)sc_dot544,17055
+inline T sc_dot(const sc_matrix<T>& A, int irow, const sc_vector<T>& v) { sc_dot588,18151
+inline T sc_dot(const sc_vector<T>& v, const sc_matrix<T>& A, int icol) { sc_dot602,18585
+template<typename T> inline T sc_dot(const sc_sparse_vector<T>& v, const sc_matrix<T>& A, int icol)sc_dot606,18698
+inline T sc_dot(const sc_matrix<T>& A, int irow, const sc_matrix<T>& B, int jcol) { sc_dot613,18942
+inline void sc_mul(const sc_matrix<double>& A, const sc_vector<double>& u, sc_vector<T>& v) { sc_mul631,19340
+inline void sc_mul<double>(const sc_matrix<double>& A, bool At, const sc_vector<double>& u, sc_vector<double>& v) {    sc_mul636,19472
+inline void sc_mul<float>(const sc_matrix<float>& A, bool At, const sc_vector<float>& u, sc_vector<float>& v) {    sc_mul653,19909
+inline void sc_mul(const sc_matrix<T>& A, const sc_sparse_vector<T>& u, sc_vector<T>& v) { sc_mul670,20353
+inline void sc_mul(const sc_vector<T>& u, const sc_matrix<T>& A, sc_vector<T>& v) { sc_mul692,20856
+inline void sc_mul(const sc_sparse_vector<T>& u, const sc_matrix<T>& A, sc_vector<T>& v) { sc_mul697,20987
+inline void sc_mul_partial(const sc_matrix<T>& A, const sc_vector<T>& u, sc_sparse_vector<T>& v) { sc_mul_partial719,21492
+void sc_mul(const sc_matrix<T>& A, bool At, const sc_matrix<T>& B, bool Bt, sc_matrix<T>& C) { sc_mul762,22477
+inline void sc_gram(const sc_matrix<T>& A, sc_matrix<T>& G) { sc_gram819,23488
+inline void sc_cov(const sc_matrix<T>& A, sc_matrix<T>& S) { sc_cov825,23647
+template <typename T> void sc_dump(const sc_matrix<T>& A, std::ostream& out) {sc_dump830,23741
+template <typename T> void sc_print(const sc_matrix<T>& A, const char* name) {sc_print843,24038
+template <typename T> void sc_dump(const sc_vector<T>& v, std::ostream& out)  {sc_dump860,24470
+template <typename T> void sc_print(const sc_vector<T>& v, const char* name)  {sc_print869,24677
+template <typename T> void sc_print(const sc_sparse_vector<T>& v, const char* name)  {sc_print880,24964
+template <typename T> void sc_print(const sc_sparse_matrix<T>& A, const char* name) {sc_print906,25619
+#undef my_assertmy_assert930,26282
+
+mdls_linalg_fun.h,5948
+#define CSC_LINALG_FUNCSC_LINALG_FUN2,23
+#define my_assert(my_assert7,98
+#define my_assert(my_assert9,137
+template<typename T> inline void sc_rank_one_update(const T& alpha, const sc_matrix<T>& u, const sc_vector<T>& v, sc_matrix<T>& A)sc_rank_one_update139,8221
+inline void sc_fill(const T& a, sc_vector<T>& u) { sc_fill156,8635
+inline T sc_sum(const sc_vector<T>& u) { sc_sum164,8794
+template<typename T> inline int sc_amax(const sc_vector<T>& u) {sc_amax173,8947
+inline void sc_copy(const sc_vector<T>& u, sc_vector<T>& v) { sc_copy188,9215
+inline void sc_scale(const T& a, sc_vector<T>& u) { sc_scale198,9436
+inline void sc_clip(const T& a, sc_vector<T>& u) { sc_clip207,9621
+inline void sc_clip(const T& a, sc_matrix<T>& A) { sc_clip217,9858
+inline void sc_scale(const T& a, const sc_vector<T>& u, sc_vector<T>& v) { sc_scale227,10093
+inline void sc_copy(const sc_sparse_vector<T>& u, sc_sparse_vector<T>& v) { sc_copy237,10314
+inline void sc_scale(const T& a, sc_sparse_vector<T>& u) { sc_scale249,10614
+inline void sc_scale(const T& a, const sc_sparse_vector<T>& u, sc_scale258,10797
+inline void sc_fill(const T& a, const sc_matrix<T>& A) { sc_fill274,11136
+inline void sc_copy(const sc_matrix<T>& A, sc_matrix<T>& B) { sc_copy284,11326
+inline void sc_scale(const T& a, sc_matrix<T>& A) { sc_scale295,11578
+inline void sc_scale(const T& a, const sc_matrix<T>& A, sc_matrix<T>& B) { sc_scale304,11769
+inline void sc_fill(const T& a, const sc_sparse_matrix<T>& A) { sc_fill317,12036
+inline void sc_copy(const sc_sparse_matrix<T>& A, sc_sparse_matrix<T>& B) { sc_copy327,12232
+inline void sc_scale(const T& a, sc_sparse_matrix<T>& A) { sc_scale352,12825
+inline T sc_scale(const T& a, const sc_sparse_matrix<T>& A, sc_sparse_matrix<T>& B) { sc_scale361,13029
+void sc_full_to_sparse(const sc_vector<T>& vf, sc_sparse_vector<T>& vs) sc_full_to_sparse382,13576
+void sc_sparse_to_full(const sc_sparse_vector<T>& vs, sc_vector<T>& vf) sc_sparse_to_full401,14020
+void sc_add(const T& a, const sc_vector<T>& v)sc_add419,14331
+void sc_scaled_add(const T& a, const sc_vector<T>& v, sc_vector<T>& w)sc_scaled_add429,14487
+template<typename T> void sc_scaled_add(const T& a, const sc_sparse_vector<T>& v, sc_vector<T>& w) {sc_scaled_add438,14678
+void sc_add(const sc_vector<T>& u, const sc_vector<T>& v, sc_vector<T>& w)sc_add447,14931
+void sc_scaled_add(const T& a, const sc_vector<T>& u, const T& b, const sc_vector<T>& v, sc_vector<T>& w)sc_scaled_add458,15162
+void sc_add(const sc_sparse_vector<T>& u, const sc_sparse_vector<T>& v, sc_sparse_vector<T>& w)sc_add469,15428
+template<typename T>  T sc_norm2(const sc_vector<T>& u)sc_norm2490,15890
+inline T sc_norm(const sc_vector<T>& u)sc_norm502,16083
+template<typename T>  T sc_norm2(const sc_sparse_vector<T>& u)sc_norm2507,16156
+inline T sc_norm(const sc_sparse_vector<T>& u) {sc_norm520,16402
+template<typename T> T sc_dist(const sc_sparse_vector<T>& u, const sc_sparse_vector<T>& v)sc_dist525,16483
+template<typename T> T sc_dist(const sc_vector<T>& u, const sc_vector<T>& v)sc_dist542,16937
+template<typename T> void sc_scaled_add(const T& a, const sc_sparse_vector<T>& u, const T& b, const sc_sparse_vector<T>& v, sc_sparse_vector<T>& w)sc_scaled_add551,17154
+inline T sc_dot(const sc_vector<T>& u, const sc_vector<T>& v) { sc_dot578,18094
+template<typename T> inline T sc_dot(const sc_vector<T>& u, const sc_sparse_vector<T>& v)sc_dot588,18311
+inline T sc_dot(const sc_sparse_vector<T>& u, const sc_vector<T>& v)sc_dot605,18718
+inline T sc_dot(const sc_sparse_vector<T>& u, const sc_sparse_vector<T>& v)sc_dot613,18914
+inline T sc_dot(const sc_matrix<T>& A, int irow, const sc_vector<T>& v) { sc_dot659,20067
+inline T sc_dot(const sc_vector<T>& v, const sc_matrix<T>& A, int icol) { sc_dot675,20579
+inline T sc_dot(const sc_sparse_vector<T>& v, const sc_matrix<T>& A, int icol)sc_dot682,20792
+inline T sc_dot(const sc_matrix<T>& A, int irow, const sc_matrix<T>& B, int jcol) { sc_dot691,21093
+inline void sc_mul(const sc_matrix<T>& A, const sc_vector<T>& u, sc_vector<T>& v) { sc_mul710,21568
+inline void sc_scaled_mac(const T& alpha, const sc_matrix<T>& A, const sc_vector<T>& u, sc_vector<T>& v) { sc_scaled_mac719,21871
+inline void sc_mul(const sc_matrix<T>& A, bool At, const sc_vector<T>& u, sc_vector<T>& v) { sc_mul738,22337
+inline void sc_mul(const sc_matrix<T>& A, const sc_sparse_vector<T>& u, sc_vector<T>& v) { sc_mul760,22865
+inline void sc_mul(const sc_vector<T>& u, const sc_matrix<T>& A, sc_vector<T>& v) { sc_mul785,23472
+inline void sc_mul(const sc_sparse_vector<T>& u, const sc_matrix<T>& A, sc_vector<T>& v) { sc_mul813,24166
+inline void sc_mul_partial(const sc_matrix<T>& A, const sc_vector<T>& u, sc_sparse_vector<T>& v) { sc_mul_partial837,24749
+void sc_scaled_mac(const T& alpha,sc_scaled_mac883,25813
+void sc_scaled_mac(const T& alpha,sc_scaled_mac946,26962
+void sc_scaled_mac(const T& alpha,sc_scaled_mac979,27928
+inline void sc_mul(const sc_matrix<T>& A, bool At, sc_mul1011,28851
+inline void sc_mac(const sc_matrix<T>& A, bool At, sc_mac1021,29127
+inline void sc_gram(const sc_matrix<T>& A, sc_matrix<T>& G) { sc_gram1031,29415
+inline void sc_cov(const sc_matrix<T>& A, sc_matrix<T>& S) { sc_cov1039,29652
+void sc_dump(const sc_matrix<T>& A, std::ostream& out) {sc_dump1046,29845
+void sc_print(const sc_matrix<T>& A, const char* name) {sc_print1062,30220
+void sc_dump(const sc_vector<T>& v, std::ostream& out)  {sc_dump1070,30440
+void sc_print(const sc_vector<T>& v, const char* name)  {sc_print1082,30725
+void sc_print(const sc_sparse_vector<T>& v, const char* name)  {sc_print1090,30947
+void sc_dump(const sc_sparse_vector<T>& v, sc_dump1098,31191
+void sc_dump(const sc_sparse_matrix<T>& A, std::ostream& out) {sc_dump1127,31840
+void sc_print(const sc_sparse_matrix<T>& A, sc_print1146,32328
+#undef my_assertmy_assert1151,32462
+
+mdls_linalg.h,0
+
+mdls_linalg_types.h,2937
+#define CSC_LINALG_TYPESCSC_LINALG_TYPES2,25
+#define my_assert(my_assert8,122
+#define my_assert(my_assert10,161
+struct sc_vector {sc_vector14,212
+  int n;n18,251
+  T* data;  data19,260
+  typedef T type;type20,273
+  sc_vector(): n(0), data(NULL) {}sc_vector24,317
+  sc_vector(T* _data, int _n): n(_n),data(_data) {}sc_vector25,352
+  inline void allocate(int _n) {allocate26,404
+  inline void free() { free29,470
+  inline T& operator[](int i) { my_assert(i < n); return data[i]; }operator []36,580
+  inline T operator[](int i) const { my_assert(i < n); return data[i]; }operator []37,648
+struct sc_sparse_vector sc_sparse_vector53,1040
+  int n, nnz, nzmax;n58,1087
+  int n, nnz, nzmax;nnz58,1087
+  int n, nnz, nzmax;nzmax58,1087
+  T* values;values59,1108
+  int* indexes; // 1-offsetindexes60,1121
+  sc_sparse_vector(): sc_sparse_vector64,1175
+sc_sparse_vector(T* _values, int* _indexes, int _n, int _nnz, int _nzmax): sc_sparse_vector67,1260
+  inline void allocate(int _n, int _nzmax) {allocate70,1410
+  void free() {free80,1627
+  inline T& val(int i) { my_assert(i < nzmax); values[i]; }val94,1945
+  inline const T& val(int i) const { my_assert(i < nzmax); values[i]; }val95,2005
+  inline T& idx(int i) { my_assert(i < nzmax); idx[i]; }idx96,2077
+  inline const T& idx(int i) const { my_assert(i < nzmax); idx[i]; }idx97,2134
+struct sc_matrix {sc_matrix101,2228
+  int m,n;m105,2267
+  int m,n;n105,2267
+  T* data;data106,2278
+ sc_matrix(): m(0),n(0),data(NULL) {}sc_matrix111,2316
+ sc_matrix(T* _data,int _m,int _n): m(_m),n(_n),data(_data) {}sc_matrix112,2354
+  inline T& operator[](int i) { my_assert(i < (m*n)); return data[i]; }operator []113,2417
+  inline T operator[](int i) const { my_assert(i < (m*n)); return data[i]; }  operator []114,2489
+  inline T& operator()(int i,int j) const { my_assert((i < m)&&(j < n)); return data[m*j+i]; }  operator ()115,2568
+  inline sc_vector<T> column(int i) { my_assert(i < n); return sc_vector<T>(&data[m*i],m); }column116,2665
+  inline const sc_vector<T> column(int i) const { my_assert(i < n); return sc_vector<T>(&data[m*i],m); }column117,2758
+  inline void allocate(int _m, int _n) {allocate118,2863
+  void free() {free121,2947
+struct sc_sparse_matrix {sc_sparse_matrix141,3298
+  int m,n;m145,3344
+  int m,n;n145,3344
+  T* values;values146,3355
+  int* row_indexes;row_indexes147,3368
+  int* nnz;nnz148,3388
+  int col_nzmax;col_nzmax149,3400
+  int nzmax; // total number of nonzero elementsnzmax150,3417
+  sc_sparse_matrix(): sc_sparse_matrix154,3492
+  sc_sparse_matrix(T* _values, sc_sparse_matrix157,3577
+  inline void allocate(int _m, int _n, int _col_nzmax) {allocate165,3794
+  inline void free() {free179,4116
+  inline sc_sparse_vector<T> column(int i) { column191,4350
+  inline const sc_sparse_vector<T> column(int i) const { column200,4571
+#undef my_assertmy_assert210,4809
+
+mdls_noise.h,436
+#define MDLS_NOISEMDLS_NOISE2,19
+#define MRAND48_MAX MRAND48_MAX11,151
+void add_impulse_noise(T* x, T* z, size_t nrows, size_t ncols, double delta, int amax)add_impulse_noise14,203
+void add_symmetric_noise(T* x, T* z, size_t nrows, size_t ncols, double delta, int amax)add_symmetric_noise33,540
+template<class T> void add_gaussian_noise(T* x, T* z, size_t nrows, size_t ncols, double sigma, int amax)add_gaussian_noise56,1093
+
+mdls_pgm.h,401
+#define MAXROWLEN MAXROWLEN4,40
+#define MAXROWBUF MAXROWBUF5,63
+#define LINELEN LINELEN6,87
+typedef unsigned char buffer_t;buffer_t8,114
+int read_pnm_header (FILE * infile, int *colsp, int *rowsp, int *maxsp,read_pnm_header26,516
+void mdls_pgm_read(FILE* imgfile, T*& I, int& M, int& N) mdls_pgm_read69,1729
+void mdls_pgm_write(T*& I, int M, int N, FILE* imgfile) mdls_pgm_write125,3083
+
+mdls_reconstruct.h,310
+  #define MATLAB_MEX_FILEMATLAB_MEX_FILE4,59
+int mdls_reconstruct(const T* X, int w, int N, int m, int n, int ov, const T* DC, T* I, T* R) {mdls_reconstruct19,360
+int mdls_reconstruct_with_weight(const T* X, const T* W, int m, int n, int ov, const T* DC, T* I, T* R) {mdls_reconstruct_with_weight63,1313
+
+rand48.h,0
+
+tg_aux.h,83
+#define _TG_AUX__TG_AUX_2,18
+#define NGRID NGRID5,63
+#define DGRID DGRID6,83
+
+tg_multimin.h,577
+#define _MULTIMIN__MULTIMIN_2,20
+#define MULTIMIN_N MULTIMIN_N10,183
+#define MULTIMIN_SIZE_TARGET MULTIMIN_SIZE_TARGET11,249
+#define MULTIMIN_MAX_ITERS MULTIMIN_MAX_ITERS12,324
+class multimin_params {multimin_params14,395
+	iterbounds t;  // bounds for thetat16,429
+	iterbounds dd; // bounds for ddd17,466
+	iterbounds s;  // bounds for sigmas18,499
+	cost_type cost;cost19,536
+	histogram *hp;hp20,554
+	multimin_params() {}multimin_params22,573
+	multimin_params(cost_type c, iterbounds tt, iterbounds ddd, iterbounds ss, histogram& h)multimin_params23,596
+
+tg_probs.h,77
+#define _TG_PROBS__TG_PROBS_2,20
+#define TSGD_Gauss_P TSGD_Gauss_P13,296
+
+tsgd+gauss.h,3964
+#define _TSGD_GAUSS__TSGD_GAUSS_2,22
+	#define ABSIZE ABSIZE14,202
+#define MULTIMIN_N MULTIMIN_N18,253
+#define MIN_THETA MIN_THETA21,285
+#define MAX_THETA MAX_THETA22,309
+typedef enum { MLE, L1, L2} cost_type;MLE25,347
+typedef enum { MLE, L1, L2} cost_type;L125,347
+typedef enum { MLE, L1, L2} cost_type;L225,347
+typedef enum { MLE, L1, L2} cost_type;cost_type25,347
+class iterbounds {iterbounds30,421
+	double s, e, i; // start, end, increments32,450
+	double s, e, i; // start, end, incremente32,450
+	double s, e, i; // start, end, incrementi32,450
+	int    n;       // number of pointsn33,493
+	iterbounds() { s=e=i=0.0; n=0; }iterbounds35,533
+	iterbounds(double ss, double ee, double ii, int nn=0) {iterbounds36,568
+	void print() {print52,869
+	void print(char *label) {print55,971
+	void enforce(double& x) {enforce59,1041
+class tdsvec {tdsvec65,1235
+	double tds[MULTIMIN_N];tds67,1260
+	inline tdsvec() { tds[0] = tds[1] = tds[2] = 0.0; }tdsvec69,1288
+	inline tdsvec(double a, double b, double c) {tdsvec71,1344
+	inline void set_theta(double v) { tds[0]=v; }set_theta75,1437
+	inline void set_d(double v) { tds[1]=v; }set_d76,1485
+	inline void set_sigma(double v) { tds[2]=v; }set_sigma77,1529
+	inline double get_theta() const { return tds[0]; }get_theta79,1579
+	inline double get_d() const { return tds[1]; }get_d80,1632
+	inline double get_sigma() const { return tds[2]; }get_sigma81,1681
+	inline double norm() { norm83,1736
+	double& operator[](int i) { return tds[i];	}operator []89,1856
+	const double& operator[](int i) const { return tds[i]; }operator []91,1905
+	void mulscalar(double a) { mulscalar93,1966
+	void add(tdsvec y) {add96,2052
+	void print() {print99,2134
+	friend std::ostream& operator<<(std::ostream& out, const tdsvec& tds) {operator <<104,2234
+	void normalize(double min_sigma) {normalize109,2432
+	int steepest() {steepest114,2593
+	void from_gsl_vec(gsl_vector *x) {from_gsl_vec126,2854
+	void to_gsl_vec(gsl_vector *x) const {to_gsl_vec130,2969
+class histogram {histogram139,3099
+	int hist[2*ABSIZE-1];hist140,3118
+	int N;N141,3142
+	void init() {init143,3160
+	histogram() { init(); }histogram147,3239
+	histogram(int *pt) {histogram148,3265
+	histogram(histogram &h) {histogram156,3407
+	int& operator[](int i) {operator []164,3540
+	const int& operator[](int i) const {operator []168,3601
+	int getn() {getn172,3674
+	double avg() {avg176,3708
+	double var() {var186,3871
+	double avgabs() {avgabs196,4054
+	void increment(int x, int delta=1) {increment205,4209
+	void print() {print216,4440
+	friend inline std::ostream& operator<<(std::ostream& out, const histogram& h) {operator <<232,4856
+	double tg_prob_log(double theta, double d, double sigma)tg_prob_log240,5072
+	double tg_norm_codelength(double theta, double d, double sigma) {tg_norm_codelength253,5348
+	double tg_L2dist(double theta, double d, double sigma) {tg_L2dist257,5465
+	double tg_L1dist(double theta, double d, double sigma = 0) {tg_L1dist269,5767
+	void tg_alldist(double theta, double d, double sigma, tg_alldist281,6074
+	double cost_fxn(cost_type cost, double theta, double d, double sigma) {cost_fxn301,6516
+	double cost_fxn(cost_type cost, tdsvec x) {cost_fxn319,6927
+#define EPS EPS323,7024
+	int tg_gradient(cost_type cost, double theta, double d, double sigma, tdsvec& g)tg_gradient325,7082
+	int tg_gradient(cost_type cost, tdsvec& tds, tdsvec& g) {tg_gradient347,7785
+	int read(FILE *fp) {read410,9446
+#define MAXROWS MAXROWS430,9929
+class histogram_array {histogram_array432,9956
+	histogram *mx[MAXROWS];mx433,9981
+	int ncols;ncols434,10007
+	int nrows;nrows435,10020
+	void init() { ncols=nrows=0; }init437,10042
+	histogram_array(){ init();}histogram_array438,10075
+	int read(char *fname, int nc=2*ABSIZE-1) read439,10105
+	histogram& operator[](int i) { operator []464,10597
+	int get_nrows() { return nrows; }get_nrows471,10787

@@ -1,0 +1,7 @@
+library(glmnet)
+x1=matrix(rnorm(100*20),100,20)
+write.table(x1,file="x1.txt",sep="\t",row.names=F,col.names=F)
+g2=sample(1:2,100,replace=TRUE)
+write.table(g2,file="g2.txt",sep="\t",row.names=F,col.names=F)
+fit2=glmnet(x1,g2,family="binomial")
+predict(fit2,type="response",newx=x1[2:5,])

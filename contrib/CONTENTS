@@ -1,0 +1,5 @@
+CONTENTS ......... this file
+k-svd ............ Elad K-SVD implementation
+sclib ............ Sparse Coding library, based on Julien Mairal's 
+GraphDemos........ Von Luxbugr Spectral clustering demo
+

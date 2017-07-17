@@ -1,0 +1,15 @@
+set.seed(101)
+library(glmnet)
+x=matrix(rnorm(100*200),100,20)
+write.table(x,file="x.txt",sep="\t",row.names=F,col.names=F)
+y=rnorm(100)
+write.table(y,file="y.txt",sep="\t",row.names=F,col.names=F)
+fit1=glmnet(x,y)
+print(fit1)
+plot(fit1)
+
+b1=coef(fit1)
+write.table(as.matrix(b1),file="beta.txt",sep="\t",row.names=F,col.names=F)
+
+f1=predict(fit1,x)
+write.table(f1,file="fit.txt",sep="\t",row.names=F,col.names=F)
